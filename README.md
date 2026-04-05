@@ -1,18 +1,26 @@
-🌐 Secure Cloud-Native Recruitment Portal (GCP)
+# 🌐 Secure Cloud-Native Recruitment Portal (GCP)
 
-A robust, production-grade web application built on Google Cloud Platform (GCP). This project demonstrates advanced cloud engineering practices, including network isolation, managed database services, and IAM-driven security.
+A robust, production-grade web application built on **Google Cloud Platform (GCP)**. This project demonstrates advanced cloud engineering practices, including network isolation, managed database services, and IAM-driven security.
 
-🚀 Architecture Overview
-The system is designed following the Principle of Least Privilege and secure data flow:
-Custom VPC Network: Resources are isolated within a private network, eliminating unauthorized external exposure.
-Compute Engine (VM): A Linux-based web server (Apache/PHP) configured with a dedicated Service Account to handle backend logic.
-Cloud SQL (Private IP): A managed MySQL instance accessible only via the internal network. No public IP is assigned to the database.
-Cloud Storage (GCS): A secure, private bucket for storing uploaded resumes, managed via IAM roles.
-IAM & Service Accounts: The VM uses a specific Service Account with granular permissions to interact with GCS and SQL without using hardcoded keys.
+---
 
-🛠️ Implementation Steps
-1. Networking (VPC Setup)
+## 🚀 Architecture Overview
+The system is designed following the **Principle of Least Privilege** and secure data flow:
+
+*   **Custom VPC Network:** Resources are isolated within a private network, eliminating unauthorized external exposure.
+*   **Compute Engine (VM):** A Linux-based web server (Apache/PHP) hosted in a public subnet, configured with a dedicated Service Account.
+*   **Cloud SQL (Private IP):** A managed MySQL instance accessible *only* via the internal network. No public IP is assigned to the database.
+*   **Cloud Storage (GCS):** A secure, private bucket for storing uploaded resumes, managed via IAM roles.
+*   **IAM & Service Accounts:** The VM uses a specific Service Account with granular permissions to interact with GCS and SQL securely.
+
+---
+
+## 🛠️ Implementation Steps
+
+### 1. Networking (VPC Setup)
 Creating a secure, custom-built environment from scratch.
+
+```bash
 # Create the custom VPC
 gcloud compute networks create my-custom-vpc --subnet-mode=custom
 
@@ -28,7 +36,6 @@ gcloud compute firewall-rules create allow-http-custom \
 
 2. Identity & Access (IAM)
 Provisioning a dedicated identity for the application.
-bash
 # Create the Service Account
 gcloud iam service-accounts create web-app-sa --display-name="Web App SA"
 
@@ -37,10 +44,8 @@ gcloud projects add-iam-policy-binding [YOUR_PROJECT_ID] \
     --member="serviceAccount:web-app-sa@[YOUR_PROJECT_ID].iam.gserviceaccount.com" \
     --role="roles/storage.admin"
 
-
 3. Web Server Deployment (Compute Engine)
 Launching the VM attached to the custom VPC and the dedicated Service Account.
-bash
 gcloud compute instances create cv-web-server \
     --zone=us-central1-a \
     --network=my-custom-vpc \
@@ -52,7 +57,6 @@ gcloud compute instances create cv-web-server \
 💻 Application Stack (PHP/Apache)
 ⚙️ Installation Guide
 Run these commands inside the VM to set up the environment:
-bash
 # 1. Update system and install Apache, PHP, and MySQL drivers
 sudo apt-get update
 sudo apt-get install -y apache2 php libapache2-mod-php php-mysql
@@ -66,17 +70,10 @@ echo "www-data ALL=(ALL) NOPASSWD: /usr/bin/gcloud" | sudo tee /etc/sudoers.d/ww
 
 # 4. Restart server
 sudo systemctl restart apache2
-Use code with caution.
 
 📄 The Website Script (index.php)
 This script bridges the Private Cloud SQL and Cloud Storage using the VM's internal identity.
-php
 <?php
-/**
- * Secure Recruitment Portal - GCP Cloud Native
- * Architecture: VPC -> Compute Engine -> Cloud SQL (Private IP) & Cloud Storage
- */
-
 // --- Configuration (Environment Variables) ---
 $db_host = "[YOUR_DATABASE_PRIVATE_IP]"; 
 $db_user = "root";
@@ -106,13 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $cmd = "sudo gcloud storage cp $file_tmp $destination 2>&1";
     exec($cmd, $output, $return_val);
 
-    // Success UI
     if ($return_val === 0) {
         echo "<h1 style='text-align:center; color:green;'>Application Submitted! ✅</h1>";
     }
     exit;
 }
 ?>
+
+html
 <!-- Simple UI Form -->
 <form method="post" enctype="multipart/form-data" style="text-align:center; padding:50px;">
     <h2>Submit Your Application</h2>
@@ -121,3 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <input type="file" name="cv_file" required><br><br>
     <button type="submit">Submit Application</button>
 </form>
+
+markdown
+---
+**Developed by Ghadah as part of a GCP Cloud Engineering project.**
